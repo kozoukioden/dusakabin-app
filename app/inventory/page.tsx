@@ -49,7 +49,7 @@ export default function InventoryPage() {
                 />
             </div>
 
-            {Object.entries(categories).map(([cat, list]: [string, any[]]) => (
+            {(Object.entries(categories) as [string, any[]][]).map(([cat, list]) => (
                 list.length > 0 && (
                     <div key={cat} className="space-y-3">
                         <h3 className="font-bold text-gray-500 uppercase text-xs tracking-wider border-b pb-2">{cat} ({list.length})</h3>

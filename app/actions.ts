@@ -110,20 +110,26 @@ export async function deleteOrder(id: string) {
 }
 
 export async function updateOrderStatus(id: string, status: string) {
-    const order = await prisma.order.findUnique({ where: { id }, include: { items: true } });
-    if (!order) return;
+    try {
+        const order = await prisma.order.findUnique({ where: { id }, include: { items: true } });
+        if (!order) return { success: false, error: 'Sipariş bulunamadı' };
 
-    // Stock Deduction Logic
-    if (order.status === 'pending' && status === 'manufacturing') {
-        await deductStock(order.items);
+        // Stock Deduction Logic
+        if (order.status === 'pending' && status === 'manufacturing') {
+            await deductStock(order.items);
+        }
+
+        await prisma.order.update({
+            where: { id },
+            data: { status }
+        });
+        revalidatePath('/production');
+        revalidatePath('/orders/' + id); // Also revalidate detail page
+        return { success: true };
+    } catch (e: any) {
+        console.error("Update Status Error:", e);
+        return { success: false, error: e.message || "Bir hata oluştu" };
     }
-
-    await prisma.order.update({
-        where: { id },
-        data: { status }
-    });
-    revalidatePath('/production');
-    revalidatePath('/orders/' + id);
 }
 
 async function deductStock(items: any[]) {

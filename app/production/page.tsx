@@ -18,7 +18,11 @@ export default function ProductionPage() {
     }, []);
 
     const handleUpdateStatus = async (id: string, status: string) => {
-        await updateOrderStatus(id, status);
+        const result = await updateOrderStatus(id, status);
+        if (result && !result.success) {
+            alert(result.error || 'İşlem başarısız oldu');
+            return;
+        }
         load();
     };
 

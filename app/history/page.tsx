@@ -1,16 +1,17 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { db } from '@/lib/db';
-import { Order } from '@/lib/types';
+import { getOrders } from '@/app/actions';
 import { Search, CheckCircle } from 'lucide-react';
 
 export default function HistoryPage() {
-    const [orders, setOrders] = useState<Order[]>([]);
+    const [orders, setOrders] = useState<any[]>([]);
     const [search, setSearch] = useState('');
 
     useEffect(() => {
-        setOrders(db.getOrders().filter(o => o.status === 'installed').reverse());
+        getOrders().then(data => {
+            setOrders(data.filter((o: any) => o.status === 'installed'));
+        });
     }, []);
 
     const filtered = orders.filter(o =>
@@ -40,7 +41,7 @@ export default function HistoryPage() {
                             <div className="p-2 bg-green-100 text-green-600 rounded-full"><CheckCircle size={20} /></div>
                             <div>
                                 <div className="font-bold text-gray-800">{order.customerName}</div>
-                                <div className="text-xs text-gray-500">#{order.id} • {new Date(order.createdAt).toLocaleDateString()}</div>
+                                <div className="text-xs text-gray-500">#{order.id.substr(0, 8)} • {new Date(order.createdAt).toLocaleDateString()}</div>
                             </div>
                         </div>
                         <div className="text-right">

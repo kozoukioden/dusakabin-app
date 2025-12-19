@@ -1,38 +1,45 @@
+# DuşakabinPro İmalat Takip Sistemi
 
-# DuşakabinPro Web Uygulaması (v2)
+Modern, hızlı ve güvenilir Duşakabin Sipariş ve İmalat Yönetim Sistemi.
 
-Modern Order, Manufacturing, and Stock tracking system for Shower Cabin Manufacturers.
+## Özellikler
+- **Akıllı Sipariş Hesaplama**: Ölçü ve model girildiğinde kesim listesini (profil, cam) otomatik çıkarır.
+- **Pleksi ve Cam Desteği**: Pleksi modelleri için özel düşüm formülleri (G-9cm) ve profil tanımları.
+- **Canlı Stok Takibi**: Üretilen siparişler stoktan otomatik düşülür.
+- **İmalat Çizimi**: Usta için otomatik kuşbakışı teknik çizim oluşturur.
+- **Kanban Üretim Panosu**: Bekleyen -> İmalatta -> Hazır durum takibi.
+- **Mobil Uyumlu**: Tablet ve telefondan rahat kullanım.
 
-## Features
-- **Order Calculation**: Automatically calculates cutting lists (glass, profiles) based on input dimensions and model. Supports **Pleksi** (Mica) and Glass models with specific deductions.
-- **Production Board**: Kanban-style tracking (Pending -> Manufacturing -> Ready).
-- **Inventory Management**: Track stock of profiles (pieces/lengths), glass, and accessories. **Stock Deduction** logic included.
-- **Local Storage**: Data is persisted in the browser (perfect for demo).
-- **Responsive**: Works on Desktop and Mobile.
-- **Printable Sheets**: Optimized "İmalat Fişi" for workshop use.
+## Teknolojiler
+- **Framework**: Next.js 15 (App Router)
+- **Veritabanı**: Prisma ORM (Local: SQLite / Prod: Postgres)
+- **Styling**: Tailwind CSS v4
+- **UI**: Lucide React, Framer Motion
 
-## Setup & Run
+## Kurulum (Lokal)
 
-1.  Install dependencies:
+1.  Repoyu klonlayın:
+    ```bash
+    git clone https://github.com/kozoukioden/dusakabin-app.git
+    cd dusakabin-app
+    ```
+2.  Bağımlılıkları yükleyin:
     ```bash
     npm install
     ```
-2.  Run development server:
+3.  Veritabanını hazırlayın (Lokalde SQLite için `schema.prisma` dosyasını `sqlite` olarak ayarlamanız gerekebilir. Varsayılan Vercel ayarıdır):
+    ```bash
+    npx prisma generate
+    npx prisma migrate dev --name init
+    ```
+4.  Çalıştırın:
     ```bash
     npm run dev
     ```
-3.  Open [http://localhost:3000](http://localhost:3000)
 
-## Deployment
+## Vercel Deployment
 
-### Vercel (Recommended)
-This app is optimized for Vercel.
-1.  Push to GitHub.
-2.  Import in Vercel.
-3.  Deploy.
-
-### Firebase (Optional)
-To enable multi-user sync (Admin/Masters/Workers), you need to switch the `lib/db.ts` to use Firestore.
-1.  Create Firebase Project.
-2.  Install `firebase`: `npm install firebase`
-3.  Configure keys in `.env.local`.
+Bu proje Vercel üzerinde çalışmak üzere optimize edilmiştir.
+1.  Projeyi Vercel'e import edin.
+2.  **Storage** bölümünden bir **Vercel Postgres** veritabanı oluşturup bağlayın.
+3.  Deploy edin! (Tablolar otomatik oluşur).

@@ -1,0 +1,56 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+model Order {
+  id           String      @id @default(cuid())
+  customerName String
+  width        Float
+  height       Float
+  depth        Float?
+  
+  model        String
+  series       String
+  material     String
+  profileColor String
+  glassType    String?
+  
+  status       String      @default("pending") // pending, manufacturing, ready, installed
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  
+  items        OrderItem[]
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  name      String
+  val       String? // Dimension or "-"
+  unit      String
+  qty       Int
+  type      String  // profile, glass, accessory
+  stockName String? 
+  w         Float?
+  h         Float?
+}
+
+model InventoryItem {
+  id          String   @id @default(cuid())
+  name        String
+  category    String   // aluminyum, cam, aksesuar, pleksi
+  quantity    Int      @default(0)
+  unit        String
+  minWarning  Int      @default(10)
+}

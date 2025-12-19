@@ -2,19 +2,19 @@
 
 import { useEffect, useState } from 'react';
 import { notFound, useParams } from 'next/navigation';
-import { db } from '@/lib/db';
-import { Order } from '@/lib/types';
-import { ArrowLeft, Printer, Box, CheckCircle, Clock } from 'lucide-react';
+import { getOrder } from '@/app/actions';
+import { ArrowLeft, Printer, Box } from 'lucide-react';
 import Link from 'next/link';
+import { CabinVisual } from '@/components/CabinVisual';
 
 export default function OrderDetailPage() {
     const { id } = useParams() as { id: string };
-    const [order, setOrder] = useState<Order | null>(null);
+    const [order, setOrder] = useState<any>(null);
 
     useEffect(() => {
-        const orders = db.getOrders();
-        const found = orders.find(o => o.id === id);
-        if (found) setOrder(found);
+        getOrder(id).then(data => {
+            if (data) setOrder(data);
+        });
     }, [id]);
 
     if (!order) return <div className="p-8 text-center">Yükleniyor...</div>;
@@ -40,8 +40,8 @@ export default function OrderDetailPage() {
                 <div className="flex justify-between items-start border-b pb-6 mb-6">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900 mb-1">{order.customerName}</h1>
-                        <div className="text-sm text-gray-500">Sipariş No: #{order.id}</div>
-                        <div className="text-sm text-gray-500">{new Date(order.createdAt).toLocaleDateString("tr-TR", { dateStyle: 'full', timeStyle: 'short' })}</div>
+                        <div className="text-sm text-gray-500">Sipariş No: #{order.id.substr(0, 8)}</div>
+                        <div className="text-sm text-gray-500">{new Date(order.createdAt).toLocaleString("tr-TR", { dateStyle: 'full', timeStyle: 'short' })}</div>
                     </div>
                     <div className="text-right">
                         <span className={`px-3 py-1 rounded-full text-sm font-bold uppercase tracking-wider ${order.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
@@ -54,25 +54,34 @@ export default function OrderDetailPage() {
                     </div>
                 </div>
 
-                {/* Config & Dimensions */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8 bg-gray-50 p-4 rounded-xl print:bg-transparent print:p-0">
-                    <div>
-                        <div className="text-xs text-gray-400 uppercase font-bold">Ölçüler (En x Boy)</div>
-                        <div className="font-bold text-lg">{order.width} x {order.height}</div>
-                        {order.depth && <div className="text-xs text-gray-500">Derinlik: {order.depth}</div>}
+                <div className="flex flex-col md:flex-row gap-8">
+                    {/* Visual */}
+                    <div className="w-full md:w-1/3">
+                        <CabinVisual width={order.width} height={order.height} model={order.model} />
                     </div>
-                    <div>
-                        <div className="text-xs text-gray-400 uppercase font-bold">Model</div>
-                        <div className="font-bold capitalize">{order.model.replace('_', ' ')}</div>
-                    </div>
-                    <div>
-                        <div className="text-xs text-gray-400 uppercase font-bold">Seri & Renk</div>
-                        <div className="font-bold capitalize">{order.series}</div>
-                        <div className="text-sm text-gray-600">{order.profileColor}</div>
-                    </div>
-                    <div>
-                        <div className="text-xs text-gray-400 uppercase font-bold">Materyal</div>
-                        <div className="font-bold capitalize">{order.material}</div>
+
+                    {/* Config & Dimensions */}
+                    <div className="flex-1">
+                        <div className="grid grid-cols-2 gap-6 mb-8 bg-gray-50 p-4 rounded-xl print:bg-transparent print:p-0">
+                            <div>
+                                <div className="text-xs text-gray-400 uppercase font-bold">Ölçüler (En x Boy)</div>
+                                <div className="font-bold text-lg">{order.width} x {order.height}</div>
+                                {order.depth && <div className="text-xs text-gray-500">Derinlik: {order.depth}</div>}
+                            </div>
+                            <div>
+                                <div className="text-xs text-gray-400 uppercase font-bold">Model</div>
+                                <div className="font-bold capitalize">{order.model}</div>
+                            </div>
+                            <div>
+                                <div className="text-xs text-gray-400 uppercase font-bold">Seri & Renk</div>
+                                <div className="font-bold capitalize">{order.series}</div>
+                                <div className="text-sm text-gray-600">{order.profileColor}</div>
+                            </div>
+                            <div>
+                                <div className="text-xs text-gray-400 uppercase font-bold">Materyal</div>
+                                <div className="font-bold capitalize">{order.material}</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -92,7 +101,7 @@ export default function OrderDetailPage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                            {order.items?.map((item, idx) => (
+                            {order.items?.map((item: any, idx: number) => (
                                 <tr key={idx} className={item.type === 'glass' ? 'bg-blue-50/50 print:bg-transparent' : ''}>
                                     <td className="p-3 font-medium text-gray-900">
                                         {item.name}

@@ -1,23 +1,24 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { db } from '@/lib/db';
+import { getOrders, updateOrderStatus } from '@/app/actions';
 import { Order } from '@/lib/types';
 import { ArrowRight, CheckCircle, Clock } from 'lucide-react';
 
 export default function ProductionPage() {
-    const [orders, setOrders] = useState<Order[]>([]);
+    const [orders, setOrders] = useState<any[]>([]);
 
-    const load = () => {
-        setOrders(db.getOrders().filter(o => o.status !== 'installed'));
+    const load = async () => {
+        const data = await getOrders();
+        setOrders(data.filter((o: any) => o.status !== 'installed'));
     };
 
     useEffect(() => {
         load();
     }, []);
 
-    const updateStatus = (id: string, status: Order['status']) => {
-        db.updateOrder(id, { status });
+    const handleUpdateStatus = async (id: string, status: string) => {
+        await updateOrderStatus(id, status);
         load();
     };
 
@@ -28,10 +29,10 @@ export default function ProductionPage() {
                 {title} <span className="text-gray-400 text-xs ml-auto bg-gray-200 px-2 py-1 rounded-full">{items.length}</span>
             </h3>
             <div className="space-y-3">
-                {items.map((order: Order) => (
+                {items.map((order: any) => (
                     <div key={order.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
                         <div className="flex justify-between items-start mb-2">
-                            <span className="font-mono text-xs text-gray-400">#{order.id}</span>
+                            <span className="font-mono text-xs text-gray-400">#{order.id.substr(0, 8)}</span>
                             <span className="text-xs font-bold text-gray-800">{order.width}x{order.height}</span>
                         </div>
                         <div className="font-bold text-gray-900 mb-1">{order.customerName}</div>
@@ -39,7 +40,7 @@ export default function ProductionPage() {
 
                         {nextStatus && (
                             <button
-                                onClick={() => updateStatus(order.id, nextStatus)}
+                                onClick={() => handleUpdateStatus(order.id, nextStatus)}
                                 className="w-full py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1"
                             >
                                 {actionLabel} <ArrowRight size={14} />

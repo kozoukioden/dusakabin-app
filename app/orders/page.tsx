@@ -1,26 +1,27 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { db } from '@/lib/db';
-import { Order } from '@/lib/types';
+import { getOrders, deleteOrder } from '@/app/actions';
+// import { Order } from '@/lib/types'; // Types might need update or prisma types
 import Link from 'next/link';
-import { Plus, Search, Trash2, Printer, Eye } from 'lucide-react';
+import { Plus, Search, Trash2, Eye } from 'lucide-react';
 
 export default function OrdersPage() {
-    const [orders, setOrders] = useState<Order[]>([]);
+    const [orders, setOrders] = useState<any[]>([]); // Use any for now or Prisma types
     const [search, setSearch] = useState('');
 
-    const loadOrders = () => {
-        setOrders(db.getOrders().reverse()); // Newest first
+    const loadOrders = async () => {
+        const data = await getOrders();
+        setOrders(data);
     };
 
     useEffect(() => {
         loadOrders();
     }, []);
 
-    const handleDelete = (id: string) => {
+    const handleDelete = async (id: string) => {
         if (confirm('Siparişi silmek istediğinize emin misiniz?')) {
-            db.deleteOrder(id);
+            await deleteOrder(id);
             loadOrders();
         }
     };
@@ -70,7 +71,7 @@ export default function OrdersPage() {
                                 <tr><td colSpan={6} className="p-8 text-center text-gray-400">Kayıt bulunamadı.</td></tr>
                             ) : filtered.map(order => (
                                 <tr key={order.id} className="hover:bg-gray-50/50 transition-colors group">
-                                    <td className="p-4 font-mono text-gray-400">#{order.id}</td>
+                                    <td className="p-4 font-mono text-gray-400">#{order.id.substr(0, 8)}</td>
                                     <td className="p-4 font-bold text-gray-800">{order.customerName}</td>
                                     <td className="p-4 text-gray-600">{order.width}x{order.height}</td>
                                     <td className="p-4">
@@ -79,8 +80,8 @@ export default function OrdersPage() {
                                     </td>
                                     <td className="p-4">
                                         <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${order.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                                            order.status === 'manufacturing' ? 'bg-orange-100 text-orange-700' :
-                                                'bg-green-100 text-green-700'
+                                                order.status === 'manufacturing' ? 'bg-orange-100 text-orange-700' :
+                                                    'bg-green-100 text-green-700'
                                             }`}>
                                             {order.status === 'pending' ? 'Bekliyor' :
                                                 order.status === 'manufacturing' ? 'İmalatta' : 'Tamamlandı'}

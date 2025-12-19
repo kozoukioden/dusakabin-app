@@ -1,9 +1,0 @@
-Site Sahibi Müşteri (Owner):
-Gayet güzel. Sizden bir ricam olacak. 
-İmalat kısmında ustaya görsel de sunmam gerekebilir.
-Buna ben bir taslak hazırlayacağım. Size excel olarak göndersem bunu aktif edebilir misiniz
-Excel dosyasında aslında ürün girdiğimizde ürünün kaç cm olarak kesileceğinin hesaplaması da excel tablosunda var.
-Eğer resimler yoksa iletebilirim
-Usta imalat kısmına girdiğinde burda olduğu gibi düzende neyin hangi ölçüde kesilmesi gerektiğini görsün istiyorum ki kafasınsa soru işareti kalmasın
-Stok yönetiminde bu ölçüsü verilen profilleri (raylar hariç) adet olarak sayabilir miyiz ve camlarıda
-

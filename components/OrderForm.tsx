@@ -4,10 +4,36 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { SERIES, MODELS, PROFILE_COLORS } from '@/lib/constants';
 import { calculateProductionDetails } from '@/lib/calculations';
-import { db } from '@/lib/db';
+import { createOrder } from '@/app/actions';
 import { Order, ProductionItem, ModelType, ProfileSeries } from '@/lib/types';
 import { Calculator, Save, AlertCircle, CheckCircle, Package } from 'lucide-react';
 import clsx from 'clsx';
+
+const Input = ({ label, ...props }: any) => (
+    <div className="space-y-1">
+        <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">{label}</label>
+        <input
+            className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+            {...props}
+        />
+    </div>
+);
+
+const Select = ({ label, options, ...props }: any) => (
+    <div className="space-y-1">
+        <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">{label}</label>
+        <select
+            className="w-full p-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+            {...props}
+        >
+            {options.map((o: any) => (
+                <option key={o.value || o.id || o} value={o.value || o.id || o}>
+                    {o.label || o.name || o}
+                </option>
+            ))}
+        </select>
+    </div>
+);
 
 export function OrderForm() {
     const router = useRouter();
@@ -24,6 +50,7 @@ export function OrderForm() {
     });
 
     const [calculatedItems, setCalculatedItems] = useState<ProductionItem[]>([]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Auto-calculate when relevant fields change
     useEffect(() => {
@@ -37,46 +64,12 @@ export function OrderForm() {
         e.preventDefault();
         if (!formData.customerName) return alert('Müşteri adı zorunlu');
 
-        const order: Order = {
-            ...formData as Order,
-            id: Math.random().toString(36).substr(2, 9),
-            createdAt: new Date().toISOString(),
-            items: calculatedItems
-        };
+        setIsSubmitting(true);
 
-        db.saveOrder(order);
-
-        // Decrease stock (optional / TODO: Move to backend or separate action)
-        // For now, just save order.
+        await createOrder(formData, calculatedItems);
 
         router.push('/orders');
     };
-
-    const Input = ({ label, ...props }: any) => (
-        <div className="space-y-1">
-            <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">{label}</label>
-            <input
-                className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                {...props}
-            />
-        </div>
-    );
-
-    const Select = ({ label, options, ...props }: any) => (
-        <div className="space-y-1">
-            <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">{label}</label>
-            <select
-                className="w-full p-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                {...props}
-            >
-                {options.map((o: any) => (
-                    <option key={o.value || o.id || o} value={o.value || o.id || o}>
-                        {o.label || o.name || o}
-                    </option>
-                ))}
-            </select>
-        </div>
-    );
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -156,10 +149,10 @@ export function OrderForm() {
 
                     <button
                         type="submit"
-                        className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-200 transition-all flex items-center justify-center gap-2"
+                        disabled={isSubmitting}
+                        className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-200 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                     >
-                        <Save size={20} />
-                        Siparişi Kaydet
+                        {isSubmitting ? 'Kaydediliyor...' : <><Save size={20} /> Siparişi Kaydet</>}
                     </button>
                 </form>
             </div>

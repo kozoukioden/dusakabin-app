@@ -1,33 +1,18 @@
-"use client";
-
-import { useEffect, useState } from 'react';
-import { db } from '@/lib/db';
-import { Order, InventoryItem } from '@/lib/types';
+import { getOrders, getInventory } from './actions';
 import { ShoppingCart, Hammer, AlertTriangle, TrendingUp, Package } from 'lucide-react';
 import Link from 'next/link';
 
-export default function DashboardPage() {
-  const [stats, setStats] = useState({
-    pendingOrders: 0,
-    productionOrders: 0,
-    totalOrders: 0,
-    lowStock: 0
-  });
+// Server Component
+export default async function DashboardPage() {
+  const orders = await getOrders();
+  const inventory = await getInventory();
 
-  useEffect(() => {
-    // Init DB if empty
-    db.init();
-
-    const orders = db.getOrders();
-    const inventory = db.getInventory();
-
-    setStats({
-      pendingOrders: orders.filter(o => o.status === 'pending').length,
-      productionOrders: orders.filter(o => o.status === 'manufacturing').length,
-      totalOrders: orders.length,
-      lowStock: inventory.filter(i => i.quantity < 10).length
-    });
-  }, []);
+  const stats = {
+    pendingOrders: orders.filter(o => o.status === 'pending').length,
+    productionOrders: orders.filter(o => o.status === 'manufacturing').length,
+    totalOrders: orders.length,
+    lowStock: inventory.filter(i => i.quantity < 10).length
+  };
 
   const cards = [
     { label: 'Bekleyen Sipariş', val: stats.pendingOrders, icon: ShoppingCart, color: 'bg-blue-500' },
@@ -75,7 +60,7 @@ export default function DashboardPage() {
         <div className="bg-gradient-to-br from-gray-900 to-gray-800 p-6 rounded-2xl shadow-lg text-white">
           <h3 className="font-bold text-lg mb-2">DuşakabinPro'ya Hoşgeldiniz</h3>
           <p className="text-gray-400 text-sm mb-4">
-            v25 Sürümü. Tüm verileriniz yerel bilgisayarınızda güvenle saklanmaktadır.
+            v25 Sürümü. Verileriniz artık <strong>Veritabanında (SQLite/Prisma)</strong> güvenle saklanmaktadır.
             İmalat takibi ve kesim listeleri için "Sipariş" menüsünü kullanabilirsiniz.
           </p>
         </div>

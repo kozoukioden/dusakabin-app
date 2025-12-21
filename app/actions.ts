@@ -135,7 +135,7 @@ async function seedInventory() {
 
 export async function getOrders() {
     return await prisma.order.findMany({
-        include: { items: true },
+        include: { items: true, assignedTo: true },
         orderBy: { createdAt: 'desc' }
     });
 }
@@ -143,7 +143,7 @@ export async function getOrders() {
 export async function getOrder(id: string) {
     return await prisma.order.findUnique({
         where: { id },
-        include: { items: true }
+        include: { items: true, assignedTo: true }
     });
 }
 

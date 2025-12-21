@@ -21,11 +21,34 @@ export default async function DashboardPage() {
     { label: 'Kritik Stok', val: stats.lowStock, icon: AlertTriangle, color: 'bg-red-500' },
   ];
 
-  return (
-    <div>
-      <h1 className="text-2xl font-bold text-gray-800 mb-6 font-display">Genel Bakış</h1>
+  // Calculate Material Needs for Pending Orders
+  const pendingOrders = orders.filter(o => o.status === 'pending');
+  const needs: Record<string, number> = {};
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+  pendingOrders.forEach(order => {
+    order.items.forEach((item: any) => {
+      if (item.type === 'profile' && item.stockName) {
+        // Try to parse length from item.val or item.name
+        // item.val is usually "180" or "90"
+        const len = parseFloat(item.val);
+        if (!isNaN(len)) {
+          const totalLen = len * item.qty;
+          needs[item.stockName] = (needs[item.stockName] || 0) + totalLen;
+        }
+      }
+    });
+  });
+
+  return (
+    <div className="space-y-8">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-gray-800 font-display">Genel Bakış</h1>
+        <div className="text-sm text-gray-500">
+          <strong>{stats.pendingOrders}</strong> Bekleyen Sipariş
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {cards.map((c, i) => (
           <div key={i} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition-shadow">
             <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-lg ${c.color}`}>
@@ -39,30 +62,58 @@ export default async function DashboardPage() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Material Needs Report */}
+        <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+          <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2 border-b pb-2">
+            <Hammer size={20} className="text-orange-500" />
+            Günlük Profil İhtiyacı <span className="text-xs font-normal text-gray-400 ml-auto">(Bekleyen Siparişler İçin)</span>
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {Object.keys(needs).length > 0 ? (
+              Object.entries(needs).map(([name, totalCm]) => (
+                <div key={name} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                  <span className="font-medium text-gray-700 text-sm">{name}</span>
+                  <span className="font-bold text-gray-900 font-mono text-sm">
+                    {(totalCm / 100).toFixed(1)} m
+                    <span className="text-xs text-gray-400 font-normal ml-1">({Math.ceil(totalCm / 600)} boy)</span>
+                  </span>
+                </div>
+              ))
+            ) : (
+              <div className="col-span-2 text-center text-gray-400 py-8 text-sm">Kesilecek parça yok.</div>
+            )}
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-fit">
           <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
             <Package size={20} className="text-blue-600" />
             Hızlı İşlemler
           </h3>
-          <div className="grid grid-cols-2 gap-4">
-            <Link href="/orders/new" className="p-4 bg-blue-50 text-blue-700 rounded-xl hover:bg-blue-100 transition text-center font-bold text-sm flex flex-col items-center gap-2">
-              <ShoppingCart size={24} />
-              Yeni Sipariş
+          <div className="grid grid-cols-1 gap-3">
+            <Link href="/orders/new" className="p-4 bg-blue-50 text-blue-700 rounded-xl hover:bg-blue-100 transition text-center font-bold text-sm flex items-center justify-center gap-2">
+              <ShoppingCart size={20} />
+              Yeni Sipariş Oluştur
             </Link>
-            <Link href="/inventory" className="p-4 bg-teal-50 text-teal-700 rounded-xl hover:bg-teal-100 transition text-center font-bold text-sm flex flex-col items-center gap-2">
-              <Package size={24} />
-              Stok Ekle
+            <Link href="/inventory" className="p-4 bg-teal-50 text-teal-700 rounded-xl hover:bg-teal-100 transition text-center font-bold text-sm flex items-center justify-center gap-2">
+              <Package size={20} />
+              Stok Yönetimi
+            </Link>
+            <Link href="/production" className="p-4 bg-orange-50 text-orange-700 rounded-xl hover:bg-orange-100 transition text-center font-bold text-sm flex items-center justify-center gap-2">
+              <Hammer size={20} />
+              İmalat Hattı
             </Link>
           </div>
-        </div>
 
-        <div className="bg-gradient-to-br from-gray-900 to-gray-800 p-6 rounded-2xl shadow-lg text-white">
-          <h3 className="font-bold text-lg mb-2">DuşakabinPro'ya Hoşgeldiniz</h3>
-          <p className="text-gray-400 text-sm mb-4">
-            v25 Sürümü. Verileriniz artık <strong>Veritabanında (SQLite/Prisma)</strong> güvenle saklanmaktadır.
-            İmalat takibi ve kesim listeleri için "Sipariş" menüsünü kullanabilirsiniz.
-          </p>
+          <div className="mt-6 pt-6 border-t">
+            <div className="text-xs text-gray-400">
+              <strong>Sistem Durumu:</strong> {inventory.length} stok kalemi, {orders.length} toplam sipariş.
+              <br />
+              Veritabanı: Aktif 🟢
+            </div>
+          </div>
         </div>
       </div>
     </div>

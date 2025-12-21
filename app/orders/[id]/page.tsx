@@ -45,8 +45,8 @@ export default function OrderDetailPage() {
                     </div>
                     <div className="text-right">
                         <span className={`px-3 py-1 rounded-full text-sm font-bold uppercase tracking-wider ${order.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                                order.status === 'manufacturing' ? 'bg-orange-100 text-orange-700' :
-                                    'bg-green-100 text-green-700'
+                            order.status === 'manufacturing' ? 'bg-orange-100 text-orange-700' :
+                                'bg-green-100 text-green-700'
                             }`}>
                             {order.status === 'pending' ? 'Bekliyor' :
                                 order.status === 'manufacturing' ? 'İmalatta' : 'Tamamlandı'}
@@ -65,8 +65,12 @@ export default function OrderDetailPage() {
                         <div className="grid grid-cols-2 gap-6 mb-8 bg-gray-50 p-4 rounded-xl print:bg-transparent print:p-0">
                             <div>
                                 <div className="text-xs text-gray-400 uppercase font-bold">Ölçüler (En x Boy)</div>
-                                <div className="font-bold text-lg">{order.width} x {order.height}</div>
-                                {order.depth && <div className="text-xs text-gray-500">Derinlik: {order.depth}</div>}
+                                <div className="font-bold text-lg">{order.width} x {order.depth || order.width}</div>
+                                {order.note && (
+                                    <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-gray-700">
+                                        <strong>Not:</strong> {order.note}
+                                    </div>
+                                )}
                             </div>
                             <div>
                                 <div className="text-xs text-gray-400 uppercase font-bold">Model</div>

@@ -23,6 +23,7 @@ model Order {
   material     String
   profileColor String
   glassType    String?
+  note         String?
   
   status       String      @default("pending") // pending, manufacturing, ready, installed
   createdAt    DateTime    @default(now())

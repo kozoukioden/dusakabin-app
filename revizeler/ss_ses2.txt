@@ -1,0 +1,9 @@
+Burada isim yazıyor tamam ama hangi modelden almışız o da yazarsa güzel olur
+geçmişe dönük aylık tablolar çıkaracağız onun için bu bize gerekli
+ne gitmiş ne gitmemiş kendi aramızda değerlendirebilmemişiz için 
+tarih de eklenirse çok güzel olur
+
+Yukarıdakiler owner müşterinin dedikleriydi
+Bunu ben söylüuorum
+biz bu kısmı sadece tarih ve model değil daha çok detaylı yapalım
+ayrıca müşteriye tablo çıktısı alabilme menüsü de yapalım

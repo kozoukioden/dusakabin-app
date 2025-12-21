@@ -13,8 +13,17 @@ const MENU = [
     { label: 'Geçmiş', icon: History, href: '/history' },
 ];
 
-export function Sidebar() {
+import { LogOut } from 'lucide-react';
+import { logout } from '@/app/actions';
+
+// ... (MENU same as before)
+
+export function Sidebar({ role }: { role: string }) {
     const pathname = usePathname();
+
+    const filteredMenu = role === 'usta'
+        ? MENU.filter(item => item.label === 'İmalat Hattı') // Usta only sees Production
+        : MENU; // Admin sees all
 
     return (
         <aside className="w-64 bg-white border-r hidden md:flex flex-col shadow-lg z-10 h-screen sticky top-0">
@@ -24,13 +33,13 @@ export function Sidebar() {
                 </div>
                 <div>
                     <h1 className="font-bold text-gray-800 tracking-tight">DuşakabinPro</h1>
-                    <p className="text-xs text-gray-500 font-medium">Masaüstü v25</p>
+                    <p className="text-xs text-gray-500 font-medium capitalize">{role === 'usta' ? 'Usta Paneli' : 'Admin Paneli'}</p>
                 </div>
             </div>
 
             <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
                 <div className="px-2 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Menü</div>
-                {MENU.map((item) => {
+                {filteredMenu.map((item) => {
                     const isActive = pathname === item.href;
                     return (
                         <Link
@@ -51,9 +60,12 @@ export function Sidebar() {
             </nav>
 
             <div className="p-4 border-t bg-gray-50/30">
-                <button className="flex items-center gap-3 w-full px-3 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors">
-                    <Settings size={18} />
-                    <span>Ayarlar</span>
+                <button
+                    onClick={() => logout()}
+                    className="flex items-center gap-3 w-full px-3 py-2 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
+                >
+                    <LogOut size={18} />
+                    <span>Çıkış Yap</span>
                 </button>
             </div>
         </aside>

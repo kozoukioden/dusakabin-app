@@ -1,9 +1,29 @@
-"use server";
-
 import { PrismaClient } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
+import { cookies } from 'next/headers';
 
 const prisma = new PrismaClient();
+
+// --- AUTH ---
+
+export async function login(password: string) {
+    if (password === 'admin123') {
+        const cookieStore = await cookies();
+        cookieStore.set('role', 'admin');
+        return true;
+    }
+    if (password === 'usta123') {
+        const cookieStore = await cookies();
+        cookieStore.set('role', 'usta');
+        return true;
+    }
+    return false;
+}
+
+export async function logout() {
+    (await cookies()).delete('role');
+    revalidatePath('/');
+}
 
 // --- INVENTORY ---
 
@@ -36,6 +56,8 @@ async function seedInventory() {
         { name: 'Süperlüx Ray', cat: 'aluminyum' },
         { name: 'Süperlüx Duvar Dikmesi', cat: 'aluminyum' },
         { name: 'Liverno Ray', cat: 'aluminyum' },
+        { name: 'Pratiko Ray', cat: 'aluminyum' },
+        { name: 'Pratiko Dikme', cat: 'aluminyum' },
         { name: 'Bella Dikme', cat: 'pleksi' },
         { name: 'Dişi Profil', cat: 'pleksi' },
         { name: 'Duvar Dikmesi (U)', cat: 'pleksi' }

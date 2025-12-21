@@ -1,0 +1,2 @@
+Sipariş kısmına not kısmı yapabilir miyiz
+Burda imalata girdiği anda malzemeleri stoktan düşmesini yapabilir miyiz

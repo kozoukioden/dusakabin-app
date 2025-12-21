@@ -6,7 +6,7 @@ import { SERIES, MODELS, PROFILE_COLORS } from '@/lib/constants';
 import { calculateProductionDetails } from '@/lib/calculations';
 import { createOrder } from '@/app/actions';
 import { Order, ProductionItem, ModelType, ProfileSeries } from '@/lib/types';
-import { Calculator, Save, AlertCircle, CheckCircle, Package } from 'lucide-react';
+import { Calculator, Save, AlertCircle, CheckCircle, Package, Settings } from 'lucide-react';
 import clsx from 'clsx';
 
 const Input = ({ label, ...props }: any) => (

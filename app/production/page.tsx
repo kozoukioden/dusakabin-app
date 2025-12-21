@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { getOrders, updateOrderStatus } from '@/app/actions';
 import { Order } from '@/lib/types';
 import { ArrowRight, CheckCircle, Clock } from 'lucide-react';
+import { CabinVisual } from '@/components/CabinVisual';
 
 export default function ProductionPage() {
     const [orders, setOrders] = useState<any[]>([]);
@@ -52,29 +53,54 @@ export default function ProductionPage() {
                                 </button>
                             </div>
 
-                            {/* Master View: Cutting List */}
+                            {/* Master View: Cutting List & Visual */}
                             {expanded[order.id] && (
-                                <div className="mt-4 mb-4 pt-3 border-t border-dashed">
-                                    <div className="text-[10px] uppercase font-bold text-gray-400 mb-2">Kesim Listesi</div>
-                                    <div className="space-y-1">
-                                        {order.items.map((item: any, idx: number) => (
-                                            (item.type === 'profile' || item.type === 'glass') && (
-                                                <div key={idx} className="flex justify-between text-xs">
-                                                    <span className="text-gray-600 truncated max-w-[150px]">{item.name}</span>
-                                                    <span className="font-mono font-bold text-gray-900">
-                                                        {item.type === 'glass' ? `${item.w}x${item.h}` : item.val}
-                                                        <span className="text-gray-400 font-normal ml-0.5">{item.unit}</span>
-                                                        <span className="ml-2 text-gray-400">x{item.qty}</span>
-                                                    </span>
-                                                </div>
-                                            )
-                                        ))}
-                                    </div>
-                                    {order.note && (
-                                        <div className="mt-3 p-2 bg-yellow-50 text-xs text-gray-700 rounded border border-yellow-100">
-                                            <span className="font-bold">Not:</span> {order.note}
+                                <div className="mt-4 mb-4 pt-4 border-t border-dashed bg-gray-50/50 -mx-4 px-4 pb-4">
+                                    <div className="flex flex-col gap-4">
+                                        {/* Visual */}
+                                        <div className="flex justify-center bg-white p-2 rounded-lg border border-gray-100">
+                                            <CabinVisual width={order.width} height={order.height} model={order.model} />
                                         </div>
-                                    )}
+
+                                        {/* Detailed Table */}
+                                        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                                            <div className="p-2 bg-gray-100 border-b text-[10px] font-bold text-gray-500 uppercase tracking-wider">Kesim Listesi</div>
+                                            <table className="w-full text-left text-xs">
+                                                <thead className="bg-gray-50 border-b">
+                                                    <tr>
+                                                        <th className="p-2 font-semibold text-gray-600">Parça Adı</th>
+                                                        <th className="p-2 font-semibold text-gray-600">Ölçü</th>
+                                                        <th className="p-2 font-semibold text-gray-600 text-right">Adet</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-gray-100">
+                                                    {order.items.map((item: any, idx: number) => (
+                                                        <tr key={idx} className={item.type === 'glass' ? 'bg-blue-50/30' : ''}>
+                                                            <td className="p-2 text-gray-800 font-medium">
+                                                                {item.name}
+                                                                {item.type === 'glass' && <span className="ml-1 text-[9px] bg-blue-100 text-blue-700 px-1 rounded">CAM</span>}
+                                                            </td>
+                                                            <td className="p-2 text-gray-600 font-mono">
+                                                                {item.type === 'glass'
+                                                                    ? `${item.w} x ${item.h}`
+                                                                    : (item.val === '-' ? '-' : item.val)
+                                                                }
+                                                                <span className="text-[10px] text-gray-400 ml-0.5">{item.unit !== 'adet' && item.unit}</span>
+                                                            </td>
+                                                            <td className="p-2 font-bold text-gray-900 text-right">{item.qty}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        {order.note && (
+                                            <div className="p-3 bg-yellow-50 text-xs text-gray-800 rounded border border-yellow-200 shadow-sm">
+                                                <div className="font-bold text-yellow-700 uppercase mb-1 text-[10px]">Usta İçin Not:</div>
+                                                {order.note}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             )}
 

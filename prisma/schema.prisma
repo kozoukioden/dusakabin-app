@@ -29,7 +29,26 @@ model Order {
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
   
+  assignedToId String?
+  assignedTo   User?       @relation(fields: [assignedToId], references: [id])
+
+  // Financials
+  price        Float       @default(0)
+  costMaterials Float      @default(0)
+  costLabor    Float       @default(0)
+
   items        OrderItem[]
+}
+
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  password  String
+  name      String
+  role      String   @default("usta") // admin, usta
+  createdAt DateTime @default(now())
+  
+  orders    Order[]
 }
 
 model OrderItem {

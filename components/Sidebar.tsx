@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, ShoppingCart, Hammer, Package, History, Settings } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Hammer, Package, History, Settings, Users } from 'lucide-react';
 import clsx from 'clsx';
 
 const MENU = [
@@ -11,6 +11,8 @@ const MENU = [
     { label: 'İmalat Hattı', icon: Hammer, href: '/production' },
     { label: 'Stok Yönetimi', icon: Package, href: '/inventory' },
     { label: 'Geçmiş', icon: History, href: '/history' },
+    { label: 'Muhasebe', icon: Settings, href: '/accounting' },
+    { label: 'Kullanıcılar', icon: Users, href: '/admin/users' },
 ];
 
 import { LogOut } from 'lucide-react';

@@ -6,25 +6,72 @@ import { cookies } from 'next/headers';
 
 const prisma = new PrismaClient();
 
-// --- AUTH ---
+// --- AUTH & USERS ---
 
-export async function login(password: string) {
-    if (password === 'admin123') {
-        const cookieStore = await cookies();
-        cookieStore.set('role', 'admin');
-        return true;
+export async function login(password: string, username: string = 'admin') {
+    // Default seed check on first login attempt if empty
+    const userCount = await prisma.user.count();
+    if (userCount === 0) {
+        await seedUsers();
     }
-    if (password === 'usta123') {
+
+    const user = await prisma.user.findUnique({ where: { username } });
+
+    if (user && user.password === password) {
         const cookieStore = await cookies();
-        cookieStore.set('role', 'usta');
-        return true;
+        cookieStore.set('role', user.role);
+        cookieStore.set('userId', user.id); // Track who logged in
+        cookieStore.set('username', user.name);
+        return { success: true, role: user.role };
     }
-    return false;
+    return { success: false, error: 'Kullanıcı adı veya şifre hatalı' };
 }
 
 export async function logout() {
     (await cookies()).delete('role');
+    (await cookies()).delete('userId');
+    (await cookies()).delete('username');
     revalidatePath('/');
+}
+
+// User Management Actions
+export async function getUsers() {
+    return await prisma.user.findMany({ orderBy: { createdAt: 'desc' } });
+}
+
+export async function createUser(data: any) {
+    try {
+        await prisma.user.create({ data });
+        revalidatePath('/admin/users');
+        return { success: true };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+export async function updateUser(id: string, data: any) {
+    try {
+        await prisma.user.update({ where: { id }, data });
+        revalidatePath('/admin/users');
+        return { success: true };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+export async function deleteUser(id: string) {
+    await prisma.user.delete({ where: { id } });
+    revalidatePath('/admin/users');
+}
+
+async function seedUsers() {
+    // Create Default Admin and Usta
+    await prisma.user.createMany({
+        data: [
+            { username: 'admin', password: 'admin123', name: 'Yönetici', role: 'admin' },
+            { username: 'usta', password: 'usta123', name: 'Genel Usta', role: 'usta' }
+        ]
+    });
 }
 
 // --- INVENTORY ---

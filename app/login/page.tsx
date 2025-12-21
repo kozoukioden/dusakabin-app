@@ -6,17 +6,18 @@ import { login } from '@/app/actions';
 import { Lock } from 'lucide-react';
 
 export default function LoginPage() {
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const router = useRouter();
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
-        const success = await login(password);
-        if (success) {
+        const result = await login(password, username);
+        if (result.success) {
             router.push('/');
         } else {
-            setError('Hatalı şifre!');
+            setError(result.error || 'Hata oluştu');
         }
     };
 
@@ -29,9 +30,18 @@ export default function LoginPage() {
                     </div>
                 </div>
                 <h1 className="text-2xl font-bold text-center text-gray-800 mb-2">Giriş Yap</h1>
-                <p className="text-center text-gray-500 text-sm mb-8">Devam etmek için şifrenizi girin</p>
+                <p className="text-center text-gray-500 text-sm mb-8">Kullanıcı adı ve şifrenizle giriş yapın</p>
 
                 <form onSubmit={handleLogin} className="space-y-4">
+                    <div>
+                        <input
+                            type="text"
+                            placeholder="Kullanıcı Adı (örn: admin)"
+                            className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                        />
+                    </div>
                     <div>
                         <input
                             type="password"

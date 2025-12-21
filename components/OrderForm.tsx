@@ -35,7 +35,7 @@ const Select = ({ label, options, ...props }: any) => (
     </div>
 );
 
-export function OrderForm() {
+export function OrderForm({ users = [] }: { users?: any[] }) {
     const router = useRouter();
     const [formData, setFormData] = useState<Partial<Order>>({
         customerName: '',
@@ -46,7 +46,12 @@ export function OrderForm() {
         series: 'superlux',
         material: 'cam',
         profileColor: 'Parlak',
-        status: 'pending'
+        status: 'pending',
+        note: '',
+        assignedToId: '',
+        price: 0,
+        costMaterials: 0,
+        costLabor: 0
     });
 
     const [calculatedItems, setCalculatedItems] = useState<ProductionItem[]>([]);
@@ -65,9 +70,7 @@ export function OrderForm() {
         if (!formData.customerName) return alert('Müşteri adı zorunlu');
 
         setIsSubmitting(true);
-
         await createOrder(formData, calculatedItems);
-
         router.push('/orders');
     };
 
@@ -145,6 +148,53 @@ export function OrderForm() {
                                 { value: 'pleksi', label: 'Pleksi (Mika)' }
                             ]}
                         />
+                    </div>
+
+                    {/* Management & Finance Section */}
+                    <div className="pt-4 border-t border-dashed space-y-4">
+                        <div className="bg-yellow-50 p-4 rounded-xl border border-yellow-200 space-y-4">
+                            <h3 className="font-bold text-gray-800 text-sm uppercase flex items-center gap-2">
+                                <Settings size={16} /> Yönetim & Finans
+                            </h3>
+
+                            <Select
+                                label="Siparişi Atayacağınız Usta"
+                                value={formData.assignedToId || ''}
+                                onChange={(e: any) => setFormData({ ...formData, assignedToId: e.target.value })}
+                                options={[{ value: '', label: 'Seçiniz' }, ...users.map(u => ({ value: u.id, label: u.name }))]}
+                            />
+
+                            <div className="grid grid-cols-3 gap-2">
+                                <Input
+                                    label="Satış Fiyatı (TL)"
+                                    type="number"
+                                    value={formData.price || ''}
+                                    onChange={(e: any) => setFormData({ ...formData, price: Number(e.target.value) })}
+                                />
+                                <Input
+                                    label="Malzeme Mal. (TL)"
+                                    type="number"
+                                    value={formData.costMaterials || ''}
+                                    onChange={(e: any) => setFormData({ ...formData, costMaterials: Number(e.target.value) })}
+                                />
+                                <Input
+                                    label="İşçilik Mal. (TL)"
+                                    type="number"
+                                    value={formData.costLabor || ''}
+                                    onChange={(e: any) => setFormData({ ...formData, costLabor: Number(e.target.value) })}
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Sipariş Notu</label>
+                            <textarea
+                                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all h-24 text-sm"
+                                placeholder="Örn: Kapıda ödeme alınacak, zile basma..."
+                                value={formData.note || ''}
+                                onChange={(e) => setFormData({ ...formData, note: e.target.value })}
+                            />
+                        </div>
                     </div>
 
                     <button

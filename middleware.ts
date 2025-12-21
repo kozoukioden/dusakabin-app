@@ -20,9 +20,16 @@ export function middleware(request: NextRequest) {
 
     // Role based access
     if (role === 'usta') {
-        // Usta can only access /production
+        // Usta can only access /production and /login (implicit)
+        // Explicitly block admin/accounting/orders/inventory/history
         if (!path.startsWith('/production')) {
             return NextResponse.redirect(new URL('/production', request.url));
+        }
+    }
+
+    if (path.startsWith('/admin') || path.startsWith('/accounting')) {
+        if (role !== 'admin') {
+            return NextResponse.redirect(new URL('/', request.url));
         }
     }
 

@@ -21,6 +21,12 @@ export interface Order {
   status: 'pending' | 'manufacturing' | 'ready' | 'installed';
   createdAt: string;
   notes?: string;
+  note?: string; // Align with schema
+
+  assignedToId?: string | null;
+  price?: number;
+  costMaterials?: number;
+  costLabor?: number;
 
   items?: ProductionItem[];
   totalPrice?: number;

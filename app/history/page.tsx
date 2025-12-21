@@ -14,22 +14,51 @@ export default function HistoryPage() {
         });
     }, []);
 
-    const filtered = orders.filter(o =>
-        o.customerName.toLowerCase().includes(search.toLowerCase()) ||
-        o.id.includes(search)
-    );
+    const exportToExcel = () => {
+        const headers = ["ID", "Müşteri", "Tarih", "Model", "Seri", "Ölçü", "Fiyat"];
+        if (!orders.length) return;
+
+        const csvContent = [
+            headers.join(";"),
+            ...filtered.map(o => [
+                o.id,
+                o.customerName,
+                new Date(o.createdAt).toLocaleDateString('tr-TR'),
+                o.model,
+                o.series,
+                `${o.width}x${o.height}`,
+                o.price || 0
+            ].join(";"))
+        ].join("\n");
+
+        const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `Gecmis_Siparisler_${new Date().toISOString().slice(0, 10)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
 
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between print:hidden">
                 <h1 className="text-2xl font-bold text-gray-800">Geçmiş Siparişler</h1>
-                <button
-                    onClick={() => window.print()}
-                    className="bg-gray-800 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 hover:bg-gray-700 transition"
-                >
-                    <Search size={16} className="hidden" /> {/* Dummy for import check logic if needed, but using proper icon */}
-                    Yazdır / Rapor Al
-                </button>
+                <div className="flex gap-2">
+                    <button
+                        onClick={exportToExcel}
+                        className="bg-green-600 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 hover:bg-green-700 transition"
+                    >
+                        Excel'e Aktar
+                    </button>
+                    <button
+                        onClick={() => window.print()}
+                        className="bg-gray-800 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 hover:bg-gray-700 transition"
+                    >
+                        Yazdır (PDF)
+                    </button>
+                </div>
             </div>
 
             <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-3 print:hidden">

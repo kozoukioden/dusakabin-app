@@ -51,7 +51,11 @@ export async function createUser(data: any) {
 
 export async function updateUser(id: string, data: any) {
     try {
-        await prisma.user.update({ where: { id }, data });
+        const updateData = { ...data };
+        if (!updateData.password) {
+            delete updateData.password;
+        }
+        await prisma.user.update({ where: { id }, data: updateData });
         revalidatePath('/admin/users');
         return { success: true };
     } catch (e: any) {

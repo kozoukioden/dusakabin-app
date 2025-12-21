@@ -25,7 +25,7 @@ export default function AccountingPage() {
 
     // Filter Logic
     const filteredOrders = orders.filter(o => {
-        const dateMatch = o.createdAt.startsWith(filterMonth);
+        const dateMatch = new Date(o.createdAt).toISOString().startsWith(filterMonth);
         const userMatch = filterUser ? o.assignedToId === filterUser : true;
         return dateMatch && userMatch;
     });

@@ -14,6 +14,11 @@ export default function HistoryPage() {
         });
     }, []);
 
+    const filtered = orders.filter(o =>
+        o.customerName.toLowerCase().includes(search.toLowerCase()) ||
+        o.id.includes(search)
+    );
+
     const exportToExcel = () => {
         const headers = ["ID", "Müşteri", "Tarih", "Model", "Seri", "Ölçü", "Fiyat"];
         if (!orders.length) return;

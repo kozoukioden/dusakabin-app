@@ -158,4 +158,3 @@ export const calculateProductionDetails = (order: Order, rules: any[] = []): Pro
 
     return items;
 };
-```

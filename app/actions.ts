@@ -101,6 +101,51 @@ export async function updateInventory(id: string, qtyDelta: number) {
     }
 }
 
+export async function createInventoryItem(data: any) {
+    try {
+        await prisma.inventoryItem.create({
+            data: {
+                name: data.name,
+                category: data.category,
+                quantity: Number(data.quantity) || 0,
+                unit: data.unit || 'adet'
+            }
+        });
+        revalidatePath('/inventory');
+        return { success: true };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+export async function editInventoryItem(id: string, data: any) {
+    try {
+        await prisma.inventoryItem.update({
+            where: { id },
+            data: {
+                name: data.name,
+                category: data.category,
+                quantity: Number(data.quantity),
+                unit: data.unit
+            }
+        });
+        revalidatePath('/inventory');
+        return { success: true };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+export async function deleteInventoryItem(id: string) {
+    try {
+        await prisma.inventoryItem.delete({ where: { id } });
+        revalidatePath('/inventory');
+        return { success: true };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
 async function seedInventory() {
     const items = [];
     const colors = ['Parlak', 'Antrasit'];

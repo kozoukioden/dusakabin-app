@@ -1,0 +1,16 @@
+Yeni siparişe girdim
+Genişlik ölçümü girdim örneğin 90 girdim kçşe pleksi veya camlı girdim
+Bu .5 li ondalık rakamları yuvarlıyoruz
+Bu olmasın
+Örneğin 92 girdiysem 41 41 yada cam için söylürum şimdik örneği varsayıyorum 99 ölçü geldi bana 44.5 44.5 değil de 44 44 veya 45 45 olsun yani yuvarlasın
+Küsüratlı olmasın
+Sana ss6 yı attım bu görsele bakarsan bella serisinin profilleri bunlardır isimleri de bunlardır bella serisinin pleksinin bu olduğu için ben bella serisi seçtiğimde 
+kesim listesinde ona uygun hani duvar dikmesi u tamam dişi profil tamam ama e etik mesela arka panel yazmışsınız
+arka panel ön panel var bu camların ölçüsünü vermesine gerek yok burada sadece bu profillerin ölçüsünü verse camları biz çıkarabiliyoruz
+mesela yükseklik ekliyor ya mesela ben burada 182 yüksekliğe 171.3 vermişim mesela kesilecek camın yüksekliğini
+onun ayarını yaparsan
+bir de stok yönetiminde ben stok ekleyebilsem ve eklediğim stokların isimlerini sayılarını ben ayarlayabilsem çok güzel olur
+bir de bu imalat hattının sipariş detaylarında görünen yer var ya
+ölçülerin formülleri
+mesela süper luxtra için 90 cm kıble 81 cm ray 
+bunun ayarını sağlarsan çok güzel olur

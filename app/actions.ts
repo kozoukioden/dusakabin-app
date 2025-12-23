@@ -180,8 +180,7 @@ async function seedInventory() {
     }
 }
 
-    }
-}
+
 
 // --- PRODUCTION RULES ---
 

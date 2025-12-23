@@ -159,7 +159,7 @@ export default function SettingsPage() {
             </div>
 
             <div className="space-y-8">
-                {Object.entries(grouped).map(([series, list]: [string, any[]]) => (
+                {(Object.entries(grouped) as [string, any[]][]).map(([series, list]) => (
                     <div key={series} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                         <div className="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center">
                             <h3 className="font-bold text-lg capitalize text-gray-800">{series === 'all' ? 'Genel (Tüm Seriler)' : series + ' Serisi'}</h3>
@@ -184,7 +184,7 @@ export default function SettingsPage() {
                                             <td className="px-6 py-4 font-bold text-gray-800">{rule.componentName}</td>
                                             <td className="px-6 py-4">
                                                 <span className={`text-xs font-bold px-2 py-1 rounded ${rule.type === 'profile' ? 'bg-blue-100 text-blue-600' :
-                                                        rule.type === 'glass' ? 'bg-cyan-100 text-cyan-600' : 'bg-purple-100 text-purple-600'
+                                                    rule.type === 'glass' ? 'bg-cyan-100 text-cyan-600' : 'bg-purple-100 text-purple-600'
                                                     }`}>
                                                     {rule.type === 'profile' ? 'Profil' : rule.type === 'glass' ? 'Cam' : 'Aksesuar'}
                                                 </span>

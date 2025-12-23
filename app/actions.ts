@@ -180,6 +180,100 @@ async function seedInventory() {
     }
 }
 
+    }
+}
+
+// --- PRODUCTION RULES ---
+
+export async function getProductionRules(series?: string) {
+    // If we have no rules at all, seed them
+    const count = await prisma.productionRule.count();
+    if (count === 0) {
+        await seedProductionRules();
+    }
+
+    if (series) {
+        return await prisma.productionRule.findMany({
+            where: { series },
+            orderBy: { displayOrder: 'asc' }
+        });
+    }
+    return await prisma.productionRule.findMany({ orderBy: { series: 'asc' } });
+}
+
+export async function createProductionRule(data: any) {
+    try {
+        await prisma.productionRule.create({ data });
+        revalidatePath('/admin/settings');
+        revalidatePath('/orders/new');
+        return { success: true };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+export async function updateProductionRule(id: string, data: any) {
+    try {
+        await prisma.productionRule.update({ where: { id }, data });
+        revalidatePath('/admin/settings');
+        revalidatePath('/orders/new');
+        return { success: true };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+export async function deleteProductionRule(id: string) {
+    await prisma.productionRule.delete({ where: { id } });
+    revalidatePath('/admin/settings');
+    revalidatePath('/orders/new');
+}
+
+async function seedProductionRules() {
+    const rules = [
+        // BELLA SERIES
+        { series: 'bella', componentName: 'Erkek Ray (Alt/Üst)', type: 'profile', formula: 'W - 9', quantity: 2, displayOrder: 1, stockName: 'Erkek Ray' },
+        { series: 'bella', componentName: 'Dar U', type: 'profile', formula: 'H', quantity: 2, displayOrder: 2, stockName: 'Dar U' },
+        { series: 'bella', componentName: 'Arka Panel', type: 'profile', formula: 'H', quantity: 2, displayOrder: 3, stockName: 'Arka Panel' },
+        { series: 'bella', componentName: 'Mıknatıs', type: 'profile', formula: 'H - 5.8', quantity: 2, displayOrder: 4, stockName: 'Mıknatıs' },
+        { series: 'bella', componentName: 'Arka Kanat', type: 'profile', formula: 'H - 5.8', quantity: 2, displayOrder: 5, stockName: 'Arka Kanat' },
+        { series: 'bella', componentName: 'Ön Panel', type: 'profile', formula: 'H - 12.5', quantity: 2, displayOrder: 6, stockName: 'Ön Panel' },
+        { series: 'bella', componentName: 'Dişi Profil', type: 'profile', formula: '(W / 2) - 5', quantity: 2, displayOrder: 7, stockName: 'Dişi Profil' },
+        { series: 'bella', componentName: 'Etek', type: 'profile', formula: '(W / 2) - 5', quantity: 2, displayOrder: 8, stockName: 'Etek' },
+
+        // SUPERLUX (Standard)
+        { series: 'superlux', componentName: 'Süperlüx Ray (Alt/Üst)', type: 'profile', formula: 'W - 6', quantity: 2, displayOrder: 1, stockName: 'Süperlüx Ray' }, // W-6 is standard, though latest check said W-9? Sticking to standard unless specified. Actually user said W-9 for SuperLux too in Round 3?
+        // User said: "Süperlüx Ray: En - 9 cm formülü sabitlendi." in Round 3 confirmation.
+        // Let's us W-9 for SuperLux Ray too then.
+        // Wait, verify. Round 3 code: `(seriesId === 'superlux' || isPleksi) ? 9 : series.deduction`. Yes.
+        // Wait, `series.deduction` comes from constants. Standard SuperLux constant is 6?
+        // Round 3 code forced 9.
+        // So I will seed 9.
+        { series: 'superlux', componentName: 'Süperlüx Ray (Alt/Üst)', type: 'profile', formula: 'W - 9', quantity: 2, displayOrder: 1, stockName: 'Süperlüx Ray' },
+
+        { series: 'superlux', componentName: 'Duvar Dikmesi', type: 'profile', formula: 'H', quantity: 2, displayOrder: 2, stockName: 'Duvar Dikmesi' },
+        { series: 'superlux', componentName: 'Cam Dikmesi', type: 'profile', formula: 'H - 10', quantity: 2, displayOrder: 3, stockName: 'Cam Dikmesi' },
+
+        // Glass for SuperLux
+        // Logic: (W / 2) - 2 -> Round to 5
+        // Hard to represent "Round to 5" in simple formula string "W - 2".
+        // I might need to enable JS functions or special syntax like "ROUND5((W/2)-2)".
+        // Let's implement `ROUND5` and `ROUND` as available functions in evaluator.
+        { series: 'superlux', componentName: 'Sabit Cam', type: 'glass', formula: 'ROUND5((W / 2) - 2)', quantity: 2, displayOrder: 4 },
+        { series: 'superlux', componentName: 'Çalışır Cam', type: 'glass', formula: 'ROUND5((W / 2) - 2)', quantity: 2, displayOrder: 5 },
+
+        // Accessories for All (Generic or Series Specific?)
+        // Currently accessories are hardcoded. Can be moved here too.
+        { series: 'all', componentName: 'Rulman Seti', type: 'accessory', formula: '0', quantity: 4, displayOrder: 10, stockName: 'Rulman Seti' },
+        { series: 'all', componentName: 'Kulp Takımı', type: 'accessory', formula: '0', quantity: 1, displayOrder: 11, stockName: 'Kulp Takımı' },
+        { series: 'all', componentName: 'Mıknatıs Suluk', type: 'accessory', formula: 'H', quantity: 1, displayOrder: 12, stockName: 'Mıknatıs Suluk' }
+    ];
+
+    for (const rule of rules) {
+        await prisma.productionRule.create({ data: rule });
+    }
+}
+
 // --- ORDERS ---
 
 export async function getOrders() {

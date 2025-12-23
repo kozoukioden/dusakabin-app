@@ -35,7 +35,8 @@ const Select = ({ label, options, ...props }: any) => (
     </div>
 );
 
-export function OrderForm({ users = [] }: { users?: any[] }) {
+export function OrderForm({ users = [], rules = [] }: { users?: any[], rules?: any[] }) {
+    const props = { users, rules }; // Wrapper to access in useEffect easily or just use directly
     const router = useRouter();
     const [formData, setFormData] = useState<Partial<Order>>({
         customerName: '',
@@ -60,10 +61,10 @@ export function OrderForm({ users = [] }: { users?: any[] }) {
     // Auto-calculate when relevant fields change
     useEffect(() => {
         if (formData.width && formData.height && formData.model && formData.series) {
-            const items = calculateProductionDetails(formData as Order);
+            const items = calculateProductionDetails(formData as Order, props.rules);
             setCalculatedItems(items);
         }
-    }, [formData.width, formData.height, formData.depth, formData.model, formData.series, formData.material, formData.profileColor]);
+    }, [formData.width, formData.height, formData.depth, formData.model, formData.series, formData.material, formData.profileColor, props.rules]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

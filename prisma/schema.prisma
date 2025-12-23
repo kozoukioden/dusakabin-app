@@ -74,3 +74,16 @@ model InventoryItem {
   unit        String
   minWarning  Int      @default(10)
 }
+
+model ProductionRule {
+  id            String   @id @default(cuid())
+  series        String   // 'bella', 'superlux', 'all'
+  material      String?  // 'pleksi', 'cam', null
+  model         String?  // 'kose', 'oval', null
+  componentName String
+  formula       String   // "W - 9"
+  quantity      Int      @default(2)
+  type          String   // 'profile', 'glass', 'accessory'
+  stockName     String?
+  displayOrder  Int      @default(0)
+}

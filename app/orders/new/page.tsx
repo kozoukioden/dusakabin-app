@@ -2,10 +2,11 @@ import { OrderForm } from '@/components/OrderForm';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
-import { getUsers } from '@/app/actions';
+import { getUsers, getProductionRules } from '@/app/actions';
 
 export default async function NewOrderPage() {
     const users = await getUsers();
+    const rules = await getProductionRules();
 
     // Filter out admins from assignment if needed, or allow all. Usually assign to roles 'usta'
     const ustaUsers = users.filter((u: any) => u.role === 'usta');
@@ -21,7 +22,7 @@ export default async function NewOrderPage() {
                 <p className="text-gray-500">Müşteri bilgileri ve ölçüleri girerek kesim listesi oluşturun.</p>
             </div>
 
-            <OrderForm users={ustaUsers} />
+            <OrderForm users={ustaUsers} rules={rules} />
         </div>
     );
 }

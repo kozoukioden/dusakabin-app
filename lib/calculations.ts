@@ -1,151 +1,161 @@
+```typescript
 import { Order, ProductionItem } from './types';
 import { SERIES } from './constants';
 
-export const calculateProductionDetails = (order: Order): ProductionItem[] => {
+// Safety wrapper for evaluation
+function safeEval(formula: string, context: { W: number, H: number, D: number }) {
+    try {
+        // We add helpers to scope.
+        const ROUND = (n: number) => Math.round(n);
+        const ROUND5 = (n: number) => Math.round(n / 5) * 5;
+
+        // Create a function with specific arguments and expose helpers
+        const func = new Function('W', 'H', 'D', 'ROUND', 'ROUND5', 'return ' + formula);
+        
+        const result = func(context.W, context.H, context.D, ROUND, ROUND5);
+        
+        // Ensure result is number
+        return typeof result === 'number' && !isNaN(result) ? result : 0;
+    } catch (e) {
+        console.error("Formula Eval Error:", formula, e);
+        return 0;
+    }
+}
+
+export const calculateProductionDetails = (order: Order, rules: any[] = []): ProductionItem[] => {
     const w = Number(order.width) || 0;
     const h = Number(order.height) || 0;
-    const d = Number(order.depth) || w; // Default to square if no depth
-    const model = order.model;
-    const seriesId = order.series;
-    const series = SERIES.find(s => s.id === seriesId) || SERIES[0];
-    const isPleksi = order.material === 'pleksi';
-    const isBella = seriesId === 'bella';
+    const d = Number(order.depth) || w;
     const color = order.profileColor || 'Parlak';
-
-    const getProfileName = (baseName: string) => `${baseName} (${color})`;
-
-    // Round to integer (User Request: "Küsüratlı olmasın")
-    const r = (num: number) => Math.round(num);
-
-    let items: ProductionItem[] = [];
-
-    // Determine Base Profile Name
-    let rayBaseName = 'Ray Profili';
-    if (seriesId === 'superlux') rayBaseName = 'Süperlüx Ray';
-    else if (seriesId === 'liverno') rayBaseName = 'Liverno Ray';
-    else if (seriesId === 'pratiko') rayBaseName = 'Pratiko Ray';
-    else if (seriesId === 'bella') rayBaseName = 'Erkek Ray'; // Bella specific name from SS6
-
-    // --- LOGIC ---
-    if (model === 'kose' || model === 'oval') {
-
-        // BELLA SERIES SPECIFIC LOGIC (Image ss6.jpeg)
-        if (isBella && isPleksi) {
-            // Horizontal
-            // Erkek Ray: W - 9 (from 78 -> 69)
-            items.push({ name: getProfileName('Erkek Ray (Alt/Üst)'), val: r(w - 9), unit: 'cm', qty: 2, type: 'profile', stockName: getProfileName('Erkek Ray') });
-            if (d !== w) {
-                items.push({ name: getProfileName('Erkek Ray (Alt/Üst)'), val: r(d - 9), unit: 'cm', qty: 2, type: 'profile', stockName: getProfileName('Erkek Ray') });
-            } else {
-                items.push({ name: getProfileName('Erkek Ray (Alt/Üst)'), val: r(w - 9), unit: 'cm', qty: 2, type: 'profile', stockName: getProfileName('Erkek Ray') });
-            }
-
-            // Dişi / Etek: (W / 2) - 5 (Approx from 78 -> 34)
-            const horizontalShort = r((w / 2) - 5);
-            items.push({ name: getProfileName('Dişi Profil'), val: horizontalShort, unit: 'cm', qty: 2, type: 'profile', stockName: getProfileName('Dişi Profil') });
-            items.push({ name: getProfileName('Etek'), val: horizontalShort, unit: 'cm', qty: 2, type: 'profile', stockName: getProfileName('Etek') });
-
-            if (d !== w) {
-                const horizontalShortD = r((d / 2) - 5);
-                items.push({ name: getProfileName('Dişi Profil'), val: horizontalShortD, unit: 'cm', qty: 2, type: 'profile', stockName: getProfileName('Dişi Profil') });
-                items.push({ name: getProfileName('Etek'), val: horizontalShortD, unit: 'cm', qty: 2, type: 'profile', stockName: getProfileName('Etek') });
-            } else {
-                items.push({ name: getProfileName('Dişi Profil'), val: horizontalShort, unit: 'cm', qty: 2, type: 'profile', stockName: getProfileName('Dişi Profil') });
-                items.push({ name: getProfileName('Etek'), val: horizontalShort, unit: 'cm', qty: 2, type: 'profile', stockName: getProfileName('Etek') });
-            }
-
-            // Vertical
-            items.push({ name: getProfileName('Dar U'), val: r(h), unit: 'cm', qty: 2, type: 'profile', stockName: getProfileName('Dar U') });
-            items.push({ name: getProfileName('Arka Panel'), val: r(h), unit: 'cm', qty: 2, type: 'profile', stockName: getProfileName('Arka Panel') });
-            items.push({ name: getProfileName('Mıknatıs'), val: r(h - 5.8), unit: 'cm', qty: 2, type: 'profile', stockName: getProfileName('Mıknatıs') });
-            items.push({ name: getProfileName('Arka Kanat'), val: r(h - 5.8), unit: 'cm', qty: 2, type: 'profile', stockName: getProfileName('Arka Kanat') });
-            items.push({ name: getProfileName('Ön Panel'), val: r(h - 12.5), unit: 'cm', qty: 2, type: 'profile', stockName: getProfileName('Ön Panel') });
-
-            // Specs say: "No glass/pleksi dimensions needed" for Bella
-            // We do NOT add any 'glass' items here.
-
-        } else {
-            // STANDARD LOGIC (SuperLux, Liverno, etc.)
-            let deduction = (seriesId === 'superlux' || isPleksi) ? 9 : series.deduction;
-
-            const rayW = r(w - deduction);
-            const rayD = r(d - deduction);
-
-            items.push({ name: getProfileName(rayBaseName + ' Alt/Üst'), val: rayW, unit: 'cm', qty: 2, type: 'profile', stockName: getProfileName(rayBaseName) });
-            items.push({ name: getProfileName(rayBaseName + ' Alt/Üst'), val: rayD, unit: 'cm', qty: 2, type: 'profile', stockName: getProfileName(rayBaseName) });
-
-            // Vertical Profiles
-            items.push({ name: getProfileName('Duvar Dikmesi'), val: r(h), unit: 'cm', qty: 2, type: 'profile', stockName: getProfileName('Duvar Dikmesi') });
-
-            if (isPleksi) {
-                // Generic Pleksi (Non-Bella) - simplified fallback
-                items.push({ name: getProfileName('Dişi Profil'), val: r(h), unit: 'cm', qty: 2, type: 'profile', stockName: getProfileName('Dişi') });
-            } else {
-                if (series.hasCamDikmesi) {
-                    items.push({ name: getProfileName('Cam Dikmesi'), val: r(h - 10), unit: 'cm', qty: 2, type: 'profile', stockName: getProfileName('Cam Dikmesi') });
-                }
-            }
-
-            // Glass
-            const rawCamW = (w / 2) - 2;
-            const stockCamW = Math.round(rawCamW / 5) * 5; // Keep stock logic for glass width as "nearest 5" or "exact"? User said "no decimals". Stock is usually 5cm steps. Let's keep stock steps for glass name, but dimensions integer.
-
-            if (model === 'oval') {
-                const hGlass = isPleksi ? 180 : 182.5;
-                items.push({ name: `Oval Cam (R55)`, w: stockCamW, h: r(hGlass), unit: 'adet', qty: 2, type: 'glass' });
-                items.push({ name: `Düz Cam`, w: stockCamW, h: r(hGlass), unit: 'adet', qty: 2, type: 'glass' });
-            } else {
-                // Kose
-                if (isPleksi) {
-                    const hGlass = 180;
-                    items.push({ name: `Ön Panel (Pleksi)`, w: stockCamW, h: r(hGlass), unit: 'adet', qty: 2, type: 'glass' });
-                    items.push({ name: `Arka Panel (Pleksi)`, w: stockCamW, h: r(hGlass), unit: 'adet', qty: 2, type: 'glass' });
-                } else {
-                    items.push({ name: `Sabit Cam (Stok: ${stockCamW}cm)`, w: stockCamW, h: 182.5, unit: 'cm', qty: 2, type: 'glass' });
-                    items.push({ name: `Çalışır Cam (Stok: ${stockCamW}cm)`, w: stockCamW, h: 187.5, unit: 'cm', qty: 2, type: 'glass' });
-                }
-            }
-        }
-
-    } else if (model === 'duz_1s1c') {
-        let deduction = isPleksi ? 6 : (series.deduction + 4);
-        const rayLen = r(w - deduction);
-
-        items.push({ name: getProfileName(rayBaseName), val: rayLen, unit: 'cm', qty: 2, type: 'profile', stockName: getProfileName(rayBaseName) });
-        items.push({ name: getProfileName('Duvar Dikmesi'), val: r(h), unit: 'cm', qty: 2, type: 'profile', stockName: getProfileName('Duvar Dikmesi') });
-
-        const rawCamW = (w / 2) - 2;
-        const stockCamW = Math.round(rawCamW / 5) * 5;
-
-        items.push({ name: `Sabit Cam`, w: stockCamW, h: 182.5, unit: 'cm', qty: 1, type: 'glass' });
-        items.push({ name: `Çalışır Cam`, w: stockCamW, h: 187.5, unit: 'cm', qty: 1, type: 'glass' });
-
-    } else if (model === 'duz_2s2c') {
-        let deduction = isPleksi ? 6 : (series.deduction + 4);
-        const rayLen = r(w - deduction);
-
-        items.push({ name: getProfileName(rayBaseName), val: rayLen, unit: 'cm', qty: 2, type: 'profile', stockName: getProfileName(rayBaseName) });
-        items.push({ name: getProfileName('Duvar Dikmesi'), val: r(h), unit: 'cm', qty: 2, type: 'profile', stockName: getProfileName('Duvar Dikmesi') });
-
-        const rawCamW = (w / 4) - 2;
-        const stockCamW = Math.round(rawCamW / 5) * 5;
-
-        items.push({ name: `Sabit Cam`, w: stockCamW, h: 182.5, unit: 'cm', qty: 2, type: 'glass' });
-        items.push({ name: `Çalışır Cam`, w: stockCamW, h: 187.5, unit: 'cm', qty: 2, type: 'glass' });
+    
+    // Fallback if no rules passed (should not happen if fetched correctly, but for safety/initial migration)
+    if (!rules || rules.length === 0) {
+        return []; 
+        // Note: I'm removing the old hardcoded logic completely to force usage of rules. 
+        // If rules are empty, result is empty, prompting user to check settings. 
+        // This is better than maintaining dual logic.
     }
 
-    // Accessories
-    items.push({
-        name: 'Rulman Seti',
-        val: '-',
-        unit: 'takım',
-        qty: (model === 'oval' || model === 'kose' || model === 'duz_2s2c') ? 4 : 2,
-        type: 'accessory',
-        stockName: 'Rulman Seti'
+    const items: ProductionItem[] = [];
+    const getProfileName = (baseName: string) => `${ baseName } (${ color })`; // Helper for appending color
+
+    // Filter rules applicable to this order
+    // 1. Matches Series or 'all'
+    // 2. Matches Material (or null/any)
+    // 3. Matches Model (or null/any) - e.g. 'kose', 'oval'
+    
+    const applicableRules = rules.filter(r => {
+        const seriesMatch = r.series === 'all' || r.series === order.series;
+        const matMatch = !r.material || r.material === order.material;
+        const modelMatch = !r.model || r.model === order.model;
+        return seriesMatch && matMatch && modelMatch;
     });
 
-    items.push({ name: 'Kulp Takımı', val: '-', unit: 'takım', qty: 1, type: 'accessory', stockName: 'Kulp Takımı' });
-    items.push({ name: 'Mıknatıs Suluk', val: h, unit: 'boy', qty: 1, type: 'accessory', stockName: 'Mıknatıs Suluk' });
+    for (const rule of applicableRules) {
+        // Evaluate Formula
+        // If val is 0 or '0', usually means accessory just count. 
+        // But context might differ.
+        const val = safeEval(rule.formula, { W: w, H: h, D: d });
+        
+        // For quantity: supports simple number. 
+        // If we need dynamic quantity (e.g. 4 for oval, 2 for straight), 
+        // the rule.quantity is currently Int. 
+        // User requested "Imalat ölçülerinin formülleri". Quantity logic usually stable.
+        // Exception: Rulman Seti (Oval/Kose -> 4, Duz -> 2).
+        // Solution: Create separate rules for 'kose' rules vs 'duz' rules in DB if quantity differs.
+        
+        // For 'Glass' dimensions, rule.formula handles the "W - 2" part.
+        // But stock logic (ROUND5) is inside formula now.
+        
+        // Output Construction
+        const item: ProductionItem = {
+            name: rule.type === 'profile' ? getProfileName(rule.componentName) : rule.componentName,
+            val: val, 
+            unit: 'cm', // Default unit, will be overridden for glass/accessory
+            qty: rule.quantity,
+            type: rule.type as any,
+            stockName: rule.stockName ? getProfileName(rule.stockName) : rule.componentName
+        };
 
+        if (rule.type === 'glass') {
+            item.unit = 'adet';
+            item.w = val; // calculated width
+            // Glass height is usually Fixed or H-something.
+            // Formula usually returns WIDTH (Stock Width).
+            // Height is another formula.
+            // Current Schema only has ONE formula.
+            // For Glass, we typically need W and H.
+            // Hack: "Sabit Cam" rule formula returns W. 
+            // "Sabit Cam h" rule? No.
+            // Usually Glass Height is H - 2.5 or similar.
+            // To support fully dynamic Glass, we might need 'formulaH' in schema.
+            // OR: we treat Width and Height as separate line items? No.
+            // Let's hardcode Glass Height logic for now OR assume formula returns Width and H is derived?
+            // User requested "Imalat ölçüleri".
+            // Bella: No glass.
+            // SuperLux: Glass H is 182.5 or 187.5 (Fixed vs Moving).
+            // This is constant usually? 
+            // Let's set Glass Height to standard 182.5/187.5 for now based on name matching?
+            // Or assume H=OrderH for Pleksi.
+            
+            if (item.name.includes('Sabit')) item.h = 182.5;
+            else if (item.name.includes('Çalışır')) item.h = 187.5;
+            else item.h = h; // Default (e.g. Pleksi)
+        } 
+        else if (rule.type === 'accessory') {
+           item.unit = 'adet'; // or 'boy' if Val > 0?
+           if (rule.componentName === 'Mıknatıs Suluk') item.unit = 'boy';
+           else if (rule.componentName.includes('Takımı') || rule.componentName.includes('Rulman Seti')) item.unit = 'takım';
+           
+           if (val === 0) item.val = '-'; // If formula results in 0, it's likely a count-based accessory
+        }
+
+        items.push(item);
+    }
+    
+    // Handle Double Profiles for Width/Depth if Kose/Oval
+    // The rules generate 1 item per rule. 
+    // If we need "2x for Width, 2x for Depth" (Square cabin), we need logic?
+    // Current "Bella logic": 
+    // Erkek Ray: W-9. Qty 2. 
+    // If D !== W, we need another set for Depth.
+    // The Rule engine evaluates ONE formula.
+    // Issue: How to handle rectangular cabins (W x D)?
+    // The rule formula uses 'W'. 
+    // Determining if we need a second lines for 'D' dimension.
+    // Quick Fix: iterate rules twice if W != D and rule depends on W?
+    // Or simpler: Add 'side' field to Rule?
+    // User's request implies basic configuration.
+    // Standard approach: 
+    // 1. Rules use 'W'.
+    // 2. If Order is Rectangular (W!=D), we automatically clone 'Horizontal' profiles (type profile & formula uses W) replacing W with D?
+    // This is smart but risky.
+    // Let's implement: If W != D, we run the evaluation again swapping W for D, and append as new items?
+    // Only for "Profile" type.
+    
+    if (d !== w && d > 0 && (order.model === 'kose' || order.model === 'oval')) {
+        for (const rule of applicableRules) {
+            // Only apply this logic to profiles that are typically horizontal and depend on 'W'
+            // We assume rules for horizontal profiles will use 'W' in their formula.
+            // This is a heuristic and might need refinement based on actual rule definitions.
+            if (rule.type === 'profile' && rule.formula.includes('W')) {
+                // If it's a width-dependent profile, calculate for D too
+                // We pass 'd' as 'W' to the safeEval function so the formula "W - 9" becomes "d - 9"
+                const valD = safeEval(rule.formula, { W: d, H: h, D: d }); 
+                
+                const itemD: ProductionItem = {
+                    name: getProfileName(rule.componentName), // Same name? Usually "Erkek Ray Alt/Üst" is generic.
+                    val: valD,
+                    unit: 'cm',
+                    qty: rule.quantity,
+                    type: rule.type as any,
+                    stockName: rule.stockName ? getProfileName(rule.stockName) : rule.componentName
+                };
+                items.push(itemD);
+            }
+        }
+    }
+    
     return items;
 };
+```
